@@ -6,6 +6,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from('questions')
     .select('*')
+    .order('times_used', { ascending: false })
     .order('created_at', { ascending: false })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ questions: data })
