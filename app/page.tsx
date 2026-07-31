@@ -9,6 +9,17 @@ function getThisSunday(): string {
   return sunday.toISOString().split('T')[0]
 }
 
+async function createAndOpenEntry(weekOf: string) {
+  'use server'
+  const supabase = createClient()
+  const { data: entry } = await supabase
+    .from('weekly_entries')
+    .insert({ week_of: weekOf })
+    .select('id')
+    .single()
+  if (entry?.id) redirect(`/week/${entry.id}`)
+}
+
 export default async function HomePage() {
   const supabase = createClient()
 
@@ -33,6 +44,8 @@ export default async function HomePage() {
   const weekLabel = new Date(weekOf + 'T12:00:00').toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', year: 'numeric',
   })
+
+  const createEntry = createAndOpenEntry.bind(null, weekOf)
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
@@ -78,8 +91,24 @@ export default async function HomePage() {
           >
             Continue writing →
           </a>
+        ) : hasSentThisWeek ? (
+          <form action={createEntry}>
+            <button
+              type="submit"
+              className="w-full border border-indigo-600 text-indigo-600 rounded px-4 py-2.5 font-medium"
+            >
+              Write another letter this week
+            </button>
+          </form>
         ) : (
-          <p className="text-sm text-gray-400">Next letter goes out Sunday at 8pm.</p>
+          <form action={createEntry}>
+            <button
+              type="submit"
+              className="w-full bg-indigo-600 text-white rounded px-4 py-2.5 font-medium"
+            >
+              Start this week&apos;s letter
+            </button>
+          </form>
         )}
 
         <a href="/questions" className="text-sm text-indigo-600 underline">Manage questions</a>
