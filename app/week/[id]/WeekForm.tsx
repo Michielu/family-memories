@@ -17,7 +17,6 @@ interface Props {
     photo_urls: string[]
     sent_at: string | null
     question_ids: string[]
-    custom_questions: Record<string, string>
     note: string | null
   }
   allQuestions: Question[]
@@ -28,11 +27,8 @@ export default function WeekForm({ entry, allQuestions }: Props) {
   const [selectedIds, setSelectedIds] = useState<string[]>(entry.question_ids || [])
   const [answers, setAnswers] = useState<Record<string, string>>(entry.answers || {})
   const [photoUrls, setPhotoUrls] = useState<string[]>(entry.photo_urls || [])
-  const [customQuestions, setCustomQuestions] = useState<Record<string, string>>(entry.custom_questions || {})
-  const [customInput, setCustomInput] = useState('')
   const [note, setNote] = useState<string>(entry.note || '')
   const [saving, setSaving] = useState(false)
-  const [savingToBank, setSavingToBank] = useState(false)
   const [creatingNew, setCreatingNew] = useState(false)
 
   const questionMap = Object.fromEntries(allQuestions.map(q => [q.id, q]))
