@@ -1,6 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
+export async function GET(_request: Request, { params }: { params: { id: string } }) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('weekly_entries')
+    .select('id,week_of,sent_at,email_preview')
+    .eq('id', params.id)
+    .single()
+  if (error) return NextResponse.json({ error: error.message }, { status: 404 })
+  return NextResponse.json({ entry: data })
+}
+
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const { answers, photoUrls } = await request.json()
   const supabase = createClient()

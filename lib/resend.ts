@@ -46,23 +46,23 @@ export async function sendFailureNotification({ to, entryId, error: errMsg }: {
   })
 }
 
-export async function sendMemoryEmail({ toAddresses, subject, html, photoBuffers }: {
-  toAddresses: string[]
+export async function sendMemoryEmail({ recipients, subject, html, photoBuffers }: {
+  recipients: Array<{ name: string; email: string }>
   subject: string
   html: string
   photoBuffers: Array<{ filename: string; content: Buffer }>
 }) {
-  const { data, error } = await resend.emails.send({
-    from: FROM,
-    to: toAddresses,
-    subject,
-    html,
-    attachments: photoBuffers.map(p => ({
-      filename: p.filename,
-      content: p.content,
-    })),
-  })
+  const attachments = photoBuffers.map(p => ({ filename: p.filename, content: p.content }))
 
-  if (error) throw new Error(error.message)
-  return data
+  // Send one individual email per child so each gets a separate delivery
+  await Promise.all(recipients.map(async ({ name, email }) => {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to: email,
+      subject,
+      html,
+      attachments,
+    })
+    if (error) throw new Error(`Failed to send to ${name}: ${error.message}`)
+  }))
 }

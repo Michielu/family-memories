@@ -5,7 +5,7 @@ import PhotoPicker from '@/components/PhotoPicker'
 import QuestionAnswer from '@/components/QuestionAnswer'
 
 interface Props {
-  entry: { id: string; week_of: string; answers: Record<string, string>; photo_urls: string[] }
+  entry: { id: string; week_of: string; answers: Record<string, string>; photo_urls: string[]; sent_at: string | null }
   bankQuestions: Array<{ id: string; text: string; theme: string }>
   suggestions: Array<{ id: string; text: string; promoted: boolean }>
 }
@@ -44,7 +44,13 @@ export default function WeekForm({ entry, bankQuestions, suggestions }: Props) {
     <div className="max-w-xl mx-auto px-4 py-8 flex flex-col gap-8">
       <div>
         <h1 className="text-xl font-semibold">Week of {weekLabel}</h1>
-        <p className="text-sm text-gray-500 mt-1">A letter to your kids.</p>
+        {entry.sent_at ? (
+          <p className="text-sm text-green-700 mt-1">
+            Sent on {new Date(entry.sent_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} — each child received their own copy.
+          </p>
+        ) : (
+          <p className="text-sm text-gray-500 mt-1">A letter to your kids.</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -82,14 +88,23 @@ export default function WeekForm({ entry, bankQuestions, suggestions }: Props) {
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={handlePreview}
-        disabled={saving}
-        className="bg-indigo-600 text-white rounded px-4 py-2.5 font-medium disabled:opacity-50"
-      >
-        {saving ? 'Saving…' : 'Preview letter →'}
-      </button>
+      {entry.sent_at ? (
+        <a
+          href={`/preview/${entry.id}`}
+          className="bg-gray-200 text-gray-600 rounded px-4 py-2.5 font-medium text-center"
+        >
+          View sent letter →
+        </a>
+      ) : (
+        <button
+          type="button"
+          onClick={handlePreview}
+          disabled={saving}
+          className="bg-indigo-600 text-white rounded px-4 py-2.5 font-medium disabled:opacity-50"
+        >
+          {saving ? 'Saving…' : 'Preview letter →'}
+        </button>
+      )}
     </div>
   )
 }
