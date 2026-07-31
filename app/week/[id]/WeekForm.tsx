@@ -2,28 +2,44 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PhotoPicker from '@/components/PhotoPicker'
-import QuestionAnswer from '@/components/QuestionAnswer'
 
-interface Props {
-  entry: { id: string; week_of: string; answers: Record<string, string>; photo_urls: string[]; sent_at: string | null }
-  bankQuestions: Array<{ id: string; text: string; theme: string }>
-  suggestions: Array<{ id: string; text: string; promoted: boolean }>
+interface Question {
+  id: string
+  text: string
+  theme: string
 }
 
-export default function WeekForm({ entry, bankQuestions, suggestions }: Props) {
+interface Props {
+  entry: {
+    id: string
+    week_of: string
+    answers: Record<string, string>
+    photo_urls: string[]
+    sent_at: string | null
+    question_ids: string[]
+  }
+  allQuestions: Question[]
+}
+
+export default function WeekForm({ entry, allQuestions }: Props) {
   const router = useRouter()
+  const [selectedIds, setSelectedIds] = useState<string[]>(entry.question_ids || [])
   const [answers, setAnswers] = useState<Record<string, string>>(entry.answers || {})
   const [photoUrls, setPhotoUrls] = useState<string[]>(entry.photo_urls || [])
-  const [promoted, setPromoted] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
+
+  const questionMap = Object.fromEntries(allQuestions.map(q => [q.id, q]))
 
   function setAnswer(id: string, value: string) {
     setAnswers(prev => ({ ...prev, [id]: value }))
   }
 
-  async function handlePromote(suggestionId: string) {
-    await fetch(`/api/suggestions/${suggestionId}/promote`, { method: 'POST' })
-    setPromoted(prev => new Set([...prev, suggestionId]))
+  function swapQuestion(oldId: string, newId: string) {
+    setSelectedIds(prev => prev.map(id => id === oldId ? newId : id))
+  }
+
+  function addQuestion(id: string) {
+    setSelectedIds(prev => [...prev, id])
   }
 
   async function handlePreview() {
@@ -31,7 +47,7 @@ export default function WeekForm({ entry, bankQuestions, suggestions }: Props) {
     await fetch(`/api/entries/${entry.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers, photoUrls }),
+      body: JSON.stringify({ answers, photoUrls, questionIds: selectedIds }),
     })
     router.push(`/preview/${entry.id}`)
   }
@@ -39,6 +55,8 @@ export default function WeekForm({ entry, bankQuestions, suggestions }: Props) {
   const weekLabel = new Date(entry.week_of + 'T12:00:00').toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', year: 'numeric',
   })
+
+  const availableToAdd = allQuestions.filter(q => !selectedIds.includes(q.id))
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8 flex flex-col gap-8">
@@ -60,31 +78,53 @@ export default function WeekForm({ entry, bankQuestions, suggestions }: Props) {
 
       <div className="flex flex-col gap-6">
         <h2 className="font-medium">This week</h2>
-        {bankQuestions.map(q => (
-          <QuestionAnswer
-            key={q.id}
-            questionId={q.id}
-            text={q.text}
-            answer={answers[q.id] || ''}
-            onAnswerChange={setAnswer}
-          />
-        ))}
-        {suggestions.length > 0 && (
-          <>
-            <p className="text-xs text-gray-400 -mb-3">✨ Suggested this week</p>
-            {suggestions.map(s => (
-              <QuestionAnswer
-                key={s.id}
-                questionId={s.id}
-                text={s.text}
-                isSuggestion
-                answer={answers[s.id] || ''}
-                onAnswerChange={setAnswer}
-                onPromote={handlePromote}
-                promoted={promoted.has(s.id)}
+
+        {selectedIds.map(id => {
+          const q = questionMap[id]
+          if (!q) return null
+          const swapOptions = allQuestions.filter(o => o.id !== id && !selectedIds.includes(o.id))
+          return (
+            <div key={id} className="flex flex-col gap-2">
+              <div className="flex items-start justify-between gap-2">
+                <label className="text-sm font-medium text-gray-800 leading-snug">{q.text}</label>
+                {!entry.sent_at && swapOptions.length > 0 && (
+                  <select
+                    value=""
+                    onChange={e => { if (e.target.value) swapQuestion(id, e.target.value) }}
+                    className="shrink-0 text-xs border rounded px-1.5 py-0.5 text-gray-500 bg-white"
+                  >
+                    <option value="">Swap</option>
+                    {swapOptions.map(o => (
+                      <option key={o.id} value={o.id}>{o.text}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              <textarea
+                value={answers[id] || ''}
+                onChange={e => setAnswer(id, e.target.value)}
+                rows={3}
+                disabled={!!entry.sent_at}
+                className="border rounded px-3 py-2 text-sm resize-y w-full disabled:bg-gray-50 disabled:text-gray-500"
+                placeholder="Write a few sentences…"
               />
-            ))}
-          </>
+            </div>
+          )
+        })}
+
+        {!entry.sent_at && availableToAdd.length > 0 && (
+          <div>
+            <select
+              value=""
+              onChange={e => { if (e.target.value) addQuestion(e.target.value) }}
+              className="text-sm border rounded px-2 py-1.5 text-gray-500 bg-white"
+            >
+              <option value="">+ Add a question…</option>
+              {availableToAdd.map(q => (
+                <option key={q.id} value={q.id}>{q.text}</option>
+              ))}
+            </select>
+          </div>
         )}
       </div>
 

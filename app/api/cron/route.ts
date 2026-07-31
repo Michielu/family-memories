@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { selectWeeklyQuestions } from '@/lib/questions'
-import { generateQuestionSuggestions } from '@/lib/claude'
 import { sendReminderEmail } from '@/lib/resend'
 
 export const runtime = 'nodejs'
@@ -14,10 +13,7 @@ export async function GET(request: Request) {
 
   const supabase = createServiceClient()
 
-  const [{ data: config }, { data: children }] = await Promise.all([
-    supabase.from('config').select('parent_email').single(),
-    supabase.from('children').select('*').order('position', { ascending: true }),
-  ])
+  const { data: config } = await supabase.from('config').select('parent_email').single()
 
   if (!config?.parent_email) {
     return NextResponse.json({ error: 'Config not set up' }, { status: 500 })
@@ -48,22 +44,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Failed to create entry' }, { status: 500 })
   }
 
-  try {
-    const ctx = {
-      season: getSeason(),
-      childAges: (children || []).map(c => getAgeString(c.birthday)),
-      recentThemes: bankQuestions.map(q => q.theme),
-    }
-    const suggestions = await generateQuestionSuggestions(ctx)
-    if (suggestions.length > 0) {
-      await supabase.from('claude_suggestions').insert(
-        suggestions.map(text => ({ text, entry_id: entry.id }))
-      )
-    }
-  } catch (e) {
-    console.error('Claude suggestions failed (non-fatal):', e)
-  }
-
   const formUrl = `${process.env.NEXT_PUBLIC_APP_URL}/week/${entry.id}`
   await sendReminderEmail({ to: config.parent_email, formUrl, weekOf })
 
@@ -79,19 +59,3 @@ function getThisSunday(): string {
   return sunday.toISOString().split('T')[0]
 }
 
-function getSeason(): string {
-  const month = new Date().getMonth() + 1
-  if (month >= 3 && month <= 5) return 'spring'
-  if (month >= 6 && month <= 8) return 'summer'
-  if (month >= 9 && month <= 11) return 'fall'
-  return 'winter'
-}
-
-function getAgeString(birthday: string | null): string {
-  if (!birthday) return 'young'
-  const birth = new Date(birthday)
-  const now = new Date()
-  const months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth())
-  if (months < 24) return `${months} months old`
-  return `${Math.floor(months / 12)} years old`
-}

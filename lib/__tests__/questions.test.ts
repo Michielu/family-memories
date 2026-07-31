@@ -8,7 +8,7 @@ vi.mock('@/lib/supabase/server', () => ({
 import { selectWeeklyQuestions } from '../questions'
 
 describe('selectWeeklyQuestions', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => { vi.clearAllMocks() })
 
   it('returns at most `count` questions', async () => {
     const fakeQuestions = [
