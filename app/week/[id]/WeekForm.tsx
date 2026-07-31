@@ -111,15 +111,15 @@ export default function WeekForm({ entry, allQuestions }: Props) {
           const swapOptions = allQuestions.filter(o => o.id !== id && !selectedIds.includes(o.id))
           return (
             <div key={id} className="flex flex-col gap-2">
-              <div className="flex items-start justify-between gap-4">
-                <p className="text-sm font-medium text-[#130e30] leading-snug flex-1 min-w-0">{q.text}</p>
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm font-medium text-[#130e30] leading-snug">{q.text}</p>
                 {!entry.sent_at && swapOptions.length > 0 && (
                   <select
                     value=""
                     onChange={e => { if (e.target.value) swapQuestion(id, e.target.value) }}
-                    className="shrink-0 text-xs text-[#5f5c6e] bg-white border border-[#eff2e5] rounded-full px-2 py-0.5 cursor-pointer focus:outline-none"
+                    className="self-start text-xs text-[#5f5c6e] bg-transparent border-none cursor-pointer focus:outline-none -ml-0.5"
                   >
-                    <option value="">swap</option>
+                    <option value="">↕ swap question</option>
                     {swapOptions.map(o => (
                       <option key={o.id} value={o.id}>{o.text}</option>
                     ))}
