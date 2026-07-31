@@ -14,7 +14,11 @@ export async function GET(request: Request) {
 
   const supabase = createServiceClient()
 
-  const { data: config } = await supabase.from('config').select('*').single()
+  const [{ data: config }, { data: children }] = await Promise.all([
+    supabase.from('config').select('parent_email').single(),
+    supabase.from('children').select('*').order('position', { ascending: true }),
+  ])
+
   if (!config?.parent_email) {
     return NextResponse.json({ error: 'Config not set up' }, { status: 500 })
   }
@@ -47,8 +51,7 @@ export async function GET(request: Request) {
   try {
     const ctx = {
       season: getSeason(),
-      child1Age: getAgeString(config.child1_birthday),
-      child2Age: getAgeString(config.child2_birthday),
+      childAges: (children || []).map(c => getAgeString(c.birthday)),
       recentThemes: bankQuestions.map(q => q.theme),
     }
     const suggestions = await generateQuestionSuggestions(ctx)

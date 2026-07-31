@@ -5,12 +5,12 @@ import { NextResponse } from 'next/server'
 export async function POST(_request: Request, { params }: { params: { id: string } }) {
   const supabase = createClient()
 
-  const [{ data: entry }, { data: config }] = await Promise.all([
+  const [{ data: entry }, { data: children }] = await Promise.all([
     supabase.from('weekly_entries').select('*').eq('id', params.id).single(),
-    supabase.from('config').select('*').single(),
+    supabase.from('children').select('name').order('position', { ascending: true }),
   ])
 
-  if (!entry || !config) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (!entry) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const questionIds = Object.keys(entry.answers || {})
   let questionTexts: Record<string, string> = {}
@@ -36,8 +36,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
 
   const body = await composeEmail({
     weekOf: weekLabel,
-    child1Name: config.child1_name,
-    child2Name: config.child2_name,
+    childNames: (children || []).map(c => c.name),
     answers,
   })
 

@@ -5,18 +5,21 @@ const MODEL = 'claude-haiku-4-5-20251001'
 
 export interface SuggestionContext {
   season: string
-  child1Age: string
-  child2Age: string
+  childAges: string[]
   recentThemes: string[]
 }
 
 export async function generateQuestionSuggestions(ctx: SuggestionContext): Promise<string[]> {
+  const agesDesc = ctx.childAges.length > 0
+    ? ctx.childAges.join(' and ')
+    : 'young'
+
   const response = await client.messages.create({
     model: MODEL,
     max_tokens: 300,
     messages: [{
       role: 'user',
-      content: `Generate 2 warm, brief journaling questions for a parent writing weekly memory letters to their kids (ages ${ctx.child1Age} and ${ctx.child2Age}).
+      content: `Generate 2 warm, brief journaling questions for a parent writing weekly memory letters to their kids (ages ${agesDesc}).
 
 Season: ${ctx.season}
 Themes covered recently (avoid these): ${ctx.recentThemes.join(', ') || 'none'}
@@ -36,12 +39,15 @@ Return exactly 2 questions, one per line, no numbering, no bullets, no extra tex
 
 export interface ComposeContext {
   weekOf: string
-  child1Name: string
-  child2Name: string
+  childNames: string[]
   answers: Array<{ question: string; answer: string }>
 }
 
 export async function composeEmail(ctx: ComposeContext): Promise<string> {
+  const namesDesc = ctx.childNames.length > 0
+    ? ctx.childNames.join(' and ')
+    : 'my kids'
+
   const answersText = ctx.answers
     .map(a => `Question: ${a.question}\nAnswer: ${a.answer}`)
     .join('\n\n')
@@ -51,7 +57,7 @@ export async function composeEmail(ctx: ComposeContext): Promise<string> {
     max_tokens: 800,
     messages: [{
       role: 'user',
-      content: `You are helping a parent write a brief weekly memory letter to their children (${ctx.child1Name} and ${ctx.child2Name}).
+      content: `You are helping a parent write a brief weekly memory letter to their children (${namesDesc}).
 
 Week of: ${ctx.weekOf}
 

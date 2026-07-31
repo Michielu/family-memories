@@ -8,9 +8,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
   const { html } = await request.json()
   const supabase = createClient()
 
-  const [{ data: entry }, { data: config }] = await Promise.all([
+  const [{ data: entry }, { data: config }, { data: children }] = await Promise.all([
     supabase.from('weekly_entries').select('*').eq('id', params.id).single(),
-    supabase.from('config').select('*').single(),
+    supabase.from('config').select('parent_email').single(),
+    supabase.from('children').select('email').order('position', { ascending: true }),
   ])
 
   if (!entry || !config) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -34,7 +35,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     month: 'long', day: 'numeric', year: 'numeric',
   })
 
-  const recipientAddresses = [config.child1_email, config.child2_email].filter(Boolean)
+  const recipientAddresses = (children || []).map(c => c.email).filter(Boolean)
 
   try {
     await sendMemoryEmail({

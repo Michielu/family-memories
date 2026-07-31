@@ -6,12 +6,6 @@ export async function POST(request: Request) {
   const supabase = createClient()
 
   const { error } = await supabase.from('config').update({
-    child1_name: body.child1Name,
-    child2_name: body.child2Name,
-    child1_email: body.child1Email,
-    child2_email: body.child2Email,
-    child1_birthday: body.child1Birthday || null,
-    child2_birthday: body.child2Birthday || null,
     parent_email: body.parentEmail,
     updated_at: new Date().toISOString(),
   }).eq('id', 1)
