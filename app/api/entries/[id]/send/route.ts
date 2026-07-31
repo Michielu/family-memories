@@ -44,19 +44,20 @@ export async function POST(request: Request, { params }: { params: { id: string 
       html,
       photoBuffers,
     })
-  } catch (e: any) {
-    console.error('Memory email send failed:', e)
+  } catch (e) {
+    const err = e instanceof Error ? e : new Error(String(e))
+    console.error('Memory email send failed:', err)
     await supabase.from('weekly_entries').update({ email_preview: html }).eq('id', params.id)
 
     try {
       await sendFailureNotification({
         to: config.parent_email,
         entryId: params.id,
-        error: e.message,
+        error: err.message,
       })
     } catch {}
 
-    return NextResponse.json({ error: 'Send failed', detail: e.message }, { status: 500 })
+    return NextResponse.json({ error: 'Send failed', detail: err.message }, { status: 500 })
   }
 
   await supabase.from('weekly_entries').update({

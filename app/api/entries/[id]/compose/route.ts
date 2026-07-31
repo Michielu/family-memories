@@ -13,7 +13,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
   if (!entry) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const questionIds = Object.keys(entry.answers || {})
-  let questionTexts: Record<string, string> = {}
+  const questionTexts: Record<string, string> = {}
 
   if (questionIds.length > 0) {
     const [{ data: bankQs }, { data: suggestionQs }] = await Promise.all([

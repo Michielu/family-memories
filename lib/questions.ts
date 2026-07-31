@@ -9,7 +9,7 @@ export interface Question {
   last_used_at: string | null
 }
 
-export async function selectWeeklyQuestions(count = 3, clientOverride?: any): Promise<Question[]> {
+export async function selectWeeklyQuestions(count = 3, clientOverride?: ReturnType<typeof createClient>): Promise<Question[]> {
   const supabase = clientOverride || createClient()
 
   const eightWeeksAgo = new Date()

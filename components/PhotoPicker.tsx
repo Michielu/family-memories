@@ -51,7 +51,7 @@ export default function PhotoPicker({ selected, onSelect }: PhotoPickerProps) {
   if (needsAuth) {
     return (
       <div className="border rounded p-4 bg-amber-50">
-        <p className="text-sm text-amber-800 mb-2">Connect Google Photos to auto-load this week's pictures.</p>
+        <p className="text-sm text-amber-800 mb-2">Connect Google Photos to auto-load this week&apos;s pictures.</p>
         <a href="/api/photos/auth" className="text-indigo-600 underline text-sm">Connect Google Photos</a>
       </div>
     )
@@ -70,6 +70,7 @@ export default function PhotoPicker({ selected, onSelect }: PhotoPickerProps) {
               selected.includes(photo.downloadUrl) ? 'border-indigo-500 opacity-100' : 'border-transparent opacity-70 hover:opacity-100'
             }`}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={photo.thumbnailUrl} alt={photo.filename} className="w-full h-full object-cover" />
             {selected.includes(photo.downloadUrl) && (
               <div className="absolute top-1 right-1 bg-indigo-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">

@@ -1,3 +1,4 @@
+import { google } from 'googleapis'
 import { createServiceClient } from './supabase/server'
 
 export interface Photo {
@@ -7,8 +8,13 @@ export interface Photo {
   filename: string
 }
 
+interface MediaItem {
+  id: string
+  baseUrl: string
+  filename: string
+}
+
 function makeOAuth2Client() {
-  const { google } = require('googleapis')
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
@@ -78,7 +84,7 @@ export async function getRecentPhotos(daysBack = 7): Promise<Photo[]> {
   if (!response.ok) throw new Error(`Photos API error: ${response.status}`)
   const data = await response.json()
 
-  return (data.mediaItems || []).map((item: any) => ({
+  return (data.mediaItems || []).map((item: MediaItem) => ({
     id: item.id,
     thumbnailUrl: `${item.baseUrl}=w400-h300-c`,
     downloadUrl: `${item.baseUrl}=d`,
