@@ -12,7 +12,6 @@ export default function PreviewPage() {
   const [sending, setSending] = useState(false)
 
   useEffect(() => {
-    // Check entry status first — don't re-compose if already sent
     fetch(`/api/entries/${id}`)
       .then(r => r.json())
       .then(async ({ entry }) => {
@@ -47,7 +46,7 @@ export default function PreviewPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-400">Composing your letter…</p>
+        <p className="text-[#5f5c6e] text-sm">Composing your letter…</p>
       </div>
     )
   }
@@ -57,12 +56,14 @@ export default function PreviewPage() {
     : null
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-8">
-      <a href={`/week/${id}`} className="text-sm text-gray-400 underline mb-4 block">← Back to edit</a>
+    <div className="max-w-xl mx-auto px-4 py-10">
+      <a href={`/week/${id}`} className="text-sm text-[#5f5c6e] underline underline-offset-2 mb-6 block">
+        ← Back to edit
+      </a>
 
       {sentLabel && (
-        <div className="mb-4 rounded bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-800">
-          Sent on {sentLabel} — each child received their own copy.
+        <div className="mb-6 rounded-2xl bg-[#eff2e5] px-5 py-3 text-sm text-[#130e30]">
+          Sent {sentLabel} — each child received their own copy.
         </div>
       )}
 

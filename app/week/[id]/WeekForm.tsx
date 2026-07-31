@@ -77,26 +77,33 @@ export default function WeekForm({ entry, allQuestions }: Props) {
 
   const availableToAdd = allQuestions.filter(q => !selectedIds.includes(q.id))
 
+  const fieldClass = 'border border-[#130e30] rounded-2xl px-4 py-3 text-sm w-full bg-white text-[#130e30] placeholder:text-[#5f5c6e] disabled:bg-[#eff2e5] disabled:text-[#5f5c6e] focus:outline-none focus:ring-2 focus:ring-[#ffe228] transition-shadow resize-y'
+
   return (
-    <div className="max-w-xl mx-auto px-4 py-8 flex flex-col gap-8">
+    <div className="max-w-lg mx-auto px-4 py-12 flex flex-col gap-10">
+
+      {/* Header */}
       <div>
-        <h1 className="text-xl font-semibold">Week of {weekLabel}</h1>
+        <p className="text-xs font-medium uppercase tracking-widest text-[#5f5c6e] mb-2">{weekLabel}</p>
+        <h1 className="font-hedvig text-3xl font-bold text-[#130e30]">This week&apos;s letter</h1>
         {entry.sent_at ? (
-          <p className="text-sm text-green-700 mt-1">
-            Sent on {new Date(entry.sent_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} — each child received their own copy.
+          <p className="text-sm text-[#5f5c6e] mt-1">
+            Sent {new Date(entry.sent_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         ) : (
-          <p className="text-sm text-gray-500 mt-1">A letter to your kids.</p>
+          <p className="text-sm text-[#5f5c6e] mt-1">A note to your kids</p>
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <h2 className="font-medium">Photos</h2>
+      {/* Photos */}
+      <div className="flex flex-col gap-3">
+        <p className="text-xs font-medium uppercase tracking-widest text-[#5f5c6e]">Photos</p>
         <PhotoPicker selected={photoUrls} onSelect={setPhotoUrls} />
       </div>
 
-      <div className="flex flex-col gap-6">
-        <h2 className="font-medium">This week</h2>
+      {/* Questions */}
+      <div className="flex flex-col gap-8">
+        <p className="text-xs font-medium uppercase tracking-widest text-[#5f5c6e]">This week</p>
 
         {selectedIds.map(id => {
           const q = questionMap[id]
@@ -104,15 +111,15 @@ export default function WeekForm({ entry, allQuestions }: Props) {
           const swapOptions = allQuestions.filter(o => o.id !== id && !selectedIds.includes(o.id))
           return (
             <div key={id} className="flex flex-col gap-2">
-              <div className="flex items-start justify-between gap-2">
-                <label className="text-sm font-medium text-gray-800 leading-snug">{q.text}</label>
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-sm font-medium text-[#130e30] leading-snug flex-1 min-w-0">{q.text}</p>
                 {!entry.sent_at && swapOptions.length > 0 && (
                   <select
                     value=""
                     onChange={e => { if (e.target.value) swapQuestion(id, e.target.value) }}
-                    className="shrink-0 text-xs border rounded px-1.5 py-0.5 text-gray-500 bg-white"
+                    className="shrink-0 text-xs text-[#5f5c6e] bg-white border border-[#eff2e5] rounded-full px-2 py-0.5 cursor-pointer focus:outline-none"
                   >
-                    <option value="">Swap</option>
+                    <option value="">swap</option>
                     {swapOptions.map(o => (
                       <option key={o.id} value={o.id}>{o.text}</option>
                     ))}
@@ -124,7 +131,7 @@ export default function WeekForm({ entry, allQuestions }: Props) {
                 onChange={e => setAnswer(id, e.target.value)}
                 rows={3}
                 disabled={!!entry.sent_at}
-                className="border rounded px-3 py-2 text-sm resize-y w-full disabled:bg-gray-50 disabled:text-gray-500"
+                className={fieldClass}
                 placeholder="Write a few sentences…"
               />
             </div>
@@ -132,38 +139,35 @@ export default function WeekForm({ entry, allQuestions }: Props) {
         })}
 
         {!entry.sent_at && availableToAdd.length > 0 && (
-          <div>
-            <select
-              value=""
-              onChange={e => { if (e.target.value) addQuestion(e.target.value) }}
-              className="text-sm border rounded px-2 py-1.5 text-gray-500 bg-white"
-            >
-              <option value="">+ Add a question…</option>
-              {availableToAdd.map(q => (
-                <option key={q.id} value={q.id}>{q.text}</option>
-              ))}
-            </select>
-          </div>
+          <select
+            value=""
+            onChange={e => { if (e.target.value) addQuestion(e.target.value) }}
+            className="text-sm text-[#5f5c6e] bg-white border border-[#eff2e5] rounded-full px-4 py-2.5 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-[#ffe228]"
+          >
+            <option value="">+ Add a question…</option>
+            {availableToAdd.map(q => (
+              <option key={q.id} value={q.id}>{q.text}</option>
+            ))}
+          </select>
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label className="font-medium">Anything else? <span className="text-gray-400 font-normal text-sm">(optional)</span></label>
-        <textarea
-          value={note}
-          onChange={e => setNote(e.target.value)}
-          rows={3}
-          disabled={!!entry.sent_at}
-          className="border rounded px-3 py-2 text-sm resize-y w-full disabled:bg-gray-50 disabled:text-gray-500"
-          placeholder="A thought, a memory, something funny…"
-        />
-      </div>
+      {/* Free note */}
+      <textarea
+        value={note}
+        onChange={e => setNote(e.target.value)}
+        rows={3}
+        disabled={!!entry.sent_at}
+        className={fieldClass}
+        placeholder="Anything else? A thought, a memory, something funny… (optional)"
+      />
 
+      {/* Actions */}
       {entry.sent_at ? (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <a
             href={`/preview/${entry.id}`}
-            className="bg-gray-200 text-gray-600 rounded px-4 py-2.5 font-medium text-center"
+            className="bg-[#eff2e5] text-[#130e30] rounded-full px-6 py-3 font-medium text-sm text-center"
           >
             View sent letter →
           </a>
@@ -171,7 +175,7 @@ export default function WeekForm({ entry, allQuestions }: Props) {
             type="button"
             onClick={handleNewLetter}
             disabled={creatingNew}
-            className="border border-indigo-600 text-indigo-600 rounded px-4 py-2.5 font-medium text-center disabled:opacity-50"
+            className="border border-[#130e30] text-[#130e30] rounded-full px-6 py-3 font-medium text-sm text-center disabled:opacity-40"
           >
             {creatingNew ? 'Creating…' : 'Write another letter this week'}
           </button>
@@ -181,7 +185,7 @@ export default function WeekForm({ entry, allQuestions }: Props) {
           type="button"
           onClick={handlePreview}
           disabled={saving}
-          className="bg-indigo-600 text-white rounded px-4 py-2.5 font-medium disabled:opacity-50"
+          className="bg-[#ffe228] text-[#130e30] rounded-full px-6 py-3 font-medium text-sm disabled:opacity-40"
         >
           {saving ? 'Saving…' : 'Preview letter →'}
         </button>

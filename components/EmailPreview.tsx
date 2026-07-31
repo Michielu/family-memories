@@ -13,16 +13,16 @@ export default function EmailPreview({ initialHtml, onSend, sending, alreadySent
   const [editing, setEditing] = useState(false)
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-medium">Preview</h2>
+        <h2 className="font-hedvig text-xl text-[#130e30]">Preview</h2>
         {!alreadySent && (
           <button
             type="button"
             onClick={() => setEditing(e => !e)}
-            className="text-sm text-indigo-600 underline"
+            className="text-sm text-[#5f5c6e] underline underline-offset-2"
           >
-            {editing ? 'Done editing' : 'Edit'}
+            {editing ? 'Done editing' : 'Edit HTML'}
           </button>
         )}
       </div>
@@ -32,11 +32,11 @@ export default function EmailPreview({ initialHtml, onSend, sending, alreadySent
           value={html}
           onChange={e => setHtml(e.target.value)}
           rows={20}
-          className="border rounded px-3 py-2 text-sm font-mono w-full"
+          className="border border-[#130e30] rounded-2xl px-4 py-3 text-sm font-mono w-full bg-white text-[#130e30] focus:outline-none focus:ring-2 focus:ring-[#ffe228]"
         />
       ) : (
         <div
-          className="border rounded p-6 bg-white shadow-sm"
+          className="rounded-3xl bg-white border border-[#eff2e5] p-8 shadow-none"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       )}
@@ -46,7 +46,7 @@ export default function EmailPreview({ initialHtml, onSend, sending, alreadySent
           type="button"
           onClick={() => onSend(html)}
           disabled={sending}
-          className="bg-indigo-600 text-white rounded px-4 py-2.5 font-medium disabled:opacity-50"
+          className="bg-[#ffe228] text-[#130e30] rounded-full px-6 py-3 font-medium text-sm disabled:opacity-40"
         >
           {sending ? 'Sending…' : 'Send to the kids ✉️'}
         </button>

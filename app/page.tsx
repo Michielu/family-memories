@@ -49,35 +49,35 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm flex flex-col gap-6">
+      <div className="w-full max-w-sm flex flex-col gap-8">
+
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Week of {weekLabel}</p>
-          <h1 className="text-xl font-semibold">Family letter</h1>
+          <p className="text-xs font-medium uppercase tracking-widest text-[#5f5c6e] mb-2">
+            Week of {weekLabel}
+          </p>
+          <h1 className="font-hedvig text-4xl text-[#130e30] leading-tight">
+            Family<br />letter
+          </h1>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="bg-[#eff2e5] rounded-3xl px-6 py-5 flex flex-col gap-4">
           {(children ?? []).map(child => {
             const hasEmail = !!child.email
             const received = hasEmail && hasSentThisWeek
             return (
               <div key={child.id} className="flex items-center justify-between">
-                <span className="font-medium text-gray-800">{child.name}</span>
+                <span className="font-medium text-[#130e30]">{child.name}</span>
                 {!hasEmail ? (
-                  <span className="text-xs text-gray-400">No email set</span>
+                  <span className="text-xs text-[#5f5c6e]">No email set</span>
                 ) : received ? (
-                  <span className="flex items-center gap-1 text-sm text-green-700">
+                  <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                     </svg>
                     Received
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1 text-sm text-gray-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="9" strokeWidth={2} />
-                    </svg>
-                    Not yet
-                  </span>
+                  <span className="text-sm text-[#5f5c6e]">Not yet</span>
                 )}
               </div>
             )
@@ -87,31 +87,27 @@ export default async function HomePage() {
         {unsentEntry ? (
           <a
             href={`/week/${unsentEntry.id}`}
-            className="bg-indigo-600 text-white rounded px-4 py-2.5 font-medium text-center"
+            className="bg-[#ffe228] text-[#130e30] rounded-full px-6 py-3 font-medium text-center"
           >
             Continue writing →
           </a>
         ) : hasSentThisWeek ? (
           <form action={createEntry}>
-            <button
-              type="submit"
-              className="w-full border border-indigo-600 text-indigo-600 rounded px-4 py-2.5 font-medium"
-            >
+            <button type="submit" className="w-full border border-[#130e30] text-[#130e30] rounded-full px-6 py-3 font-medium">
               Write another letter this week
             </button>
           </form>
         ) : (
           <form action={createEntry}>
-            <button
-              type="submit"
-              className="w-full bg-indigo-600 text-white rounded px-4 py-2.5 font-medium"
-            >
+            <button type="submit" className="w-full bg-[#ffe228] text-[#130e30] rounded-full px-6 py-3 font-medium">
               Start this week&apos;s letter
             </button>
           </form>
         )}
 
-        <a href="/questions" className="text-sm text-indigo-600 underline">Manage questions</a>
+        <a href="/questions" className="text-sm text-[#5f5c6e] underline underline-offset-2">
+          Manage questions
+        </a>
       </div>
     </div>
   )
