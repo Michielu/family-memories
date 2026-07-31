@@ -30,8 +30,14 @@ export default function WeekForm({ entry, allQuestions }: Props) {
   const [note, setNote] = useState<string>(entry.note || '')
   const [saving, setSaving] = useState(false)
   const [creatingNew, setCreatingNew] = useState(false)
+  const [localQuestions, setLocalQuestions] = useState<Question[]>([])
+  const [newQuestionText, setNewQuestionText] = useState('')
+  const [addingQuestion, setAddingQuestion] = useState(false)
+  const [showNewQuestion, setShowNewQuestion] = useState(false)
 
-  const questionMap = Object.fromEntries(allQuestions.map(q => [q.id, q]))
+  const questionMap = Object.fromEntries(
+    [...allQuestions, ...localQuestions].map(q => [q.id, q])
+  )
 
   function setAnswer(id: string, value: string) {
     setAnswers(prev => ({ ...prev, [id]: value }))
@@ -43,6 +49,26 @@ export default function WeekForm({ entry, allQuestions }: Props) {
 
   function addQuestion(id: string) {
     setSelectedIds(prev => [...prev, id])
+  }
+
+  async function handleCreateQuestion(e: React.FormEvent) {
+    e.preventDefault()
+    const text = newQuestionText.trim()
+    if (!text) return
+    setAddingQuestion(true)
+    const res = await fetch('/api/questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, theme: 'feelings' }),
+    })
+    const data = await res.json()
+    if (data.question) {
+      setLocalQuestions(prev => [...prev, data.question])
+      setSelectedIds(prev => [...prev, data.question.id])
+      setNewQuestionText('')
+      setShowNewQuestion(false)
+    }
+    setAddingQuestion(false)
   }
 
   async function handleNewLetter() {
@@ -138,17 +164,56 @@ export default function WeekForm({ entry, allQuestions }: Props) {
           )
         })}
 
-        {!entry.sent_at && availableToAdd.length > 0 && (
-          <select
-            value=""
-            onChange={e => { if (e.target.value) addQuestion(e.target.value) }}
-            className="text-sm text-[#5f5c6e] bg-white border border-[#eff2e5] rounded-full px-4 py-2.5 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-[#ffe228]"
-          >
-            <option value="">+ Add a question…</option>
-            {availableToAdd.map(q => (
-              <option key={q.id} value={q.id}>{q.text}</option>
-            ))}
-          </select>
+        {!entry.sent_at && (
+          <div className="flex flex-col gap-2">
+            {availableToAdd.length > 0 && (
+              <select
+                value=""
+                onChange={e => { if (e.target.value) addQuestion(e.target.value) }}
+                className="text-sm text-[#5f5c6e] bg-white border border-[#eff2e5] rounded-full px-4 py-2.5 cursor-pointer w-full focus:outline-none focus:ring-2 focus:ring-[#ffe228]"
+              >
+                <option value="">+ Add a question…</option>
+                {availableToAdd.map(q => (
+                  <option key={q.id} value={q.id}>{q.text}</option>
+                ))}
+              </select>
+            )}
+
+            {showNewQuestion ? (
+              <form onSubmit={handleCreateQuestion} className="flex gap-2">
+                <input
+                  autoFocus
+                  type="text"
+                  value={newQuestionText}
+                  onChange={e => setNewQuestionText(e.target.value)}
+                  placeholder="Type your question…"
+                  className="flex-1 border border-[#130e30] rounded-full px-4 py-2 text-sm bg-white text-[#130e30] placeholder:text-[#5f5c6e] focus:outline-none focus:ring-2 focus:ring-[#ffe228]"
+                />
+                <button
+                  type="submit"
+                  disabled={addingQuestion || !newQuestionText.trim()}
+                  className="bg-[#ffe228] text-[#130e30] rounded-full px-4 py-2 text-sm font-medium disabled:opacity-40 shrink-0"
+                >
+                  {addingQuestion ? '…' : 'Add'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowNewQuestion(false); setNewQuestionText('') }}
+                  className="text-sm text-[#5f5c6e] px-2"
+                >
+                  Cancel
+                </button>
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowNewQuestion(true)}
+                className="self-start text-xs text-[#5f5c6e] underline underline-offset-2"
+              >
+                + Write your own question
+              </button>
+            )}
+          </div>
         )}
       </div>
 
