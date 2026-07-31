@@ -1,0 +1,1 @@
+alter table weekly_entries drop constraint weekly_entries_week_of_key;

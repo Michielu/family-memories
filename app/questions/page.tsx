@@ -59,6 +59,16 @@ export default function QuestionsPage() {
     await load()
   }
 
+  async function deleteQuestion(q: Question) {
+    if (!confirm(`Delete "${q.text}"? This can't be undone.`)) return
+    await fetch('/api/questions', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: q.id }),
+    })
+    await load()
+  }
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
@@ -112,13 +122,22 @@ export default function QuestionsPage() {
                 )}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => toggleActive(q)}
-              className="text-xs text-gray-400 hover:text-gray-700 shrink-0"
-            >
-              {q.active ? 'Disable' : 'Enable'}
-            </button>
+            <div className="flex flex-col gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => toggleActive(q)}
+                className="text-xs text-gray-400 hover:text-gray-700"
+              >
+                {q.active ? 'Disable' : 'Enable'}
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteQuestion(q)}
+                className="text-xs text-red-400 hover:text-red-600"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>

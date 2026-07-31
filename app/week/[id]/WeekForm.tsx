@@ -17,6 +17,8 @@ interface Props {
     photo_urls: string[]
     sent_at: string | null
     question_ids: string[]
+    custom_questions: Record<string, string>
+    note: string | null
   }
   allQuestions: Question[]
 }
@@ -26,7 +28,12 @@ export default function WeekForm({ entry, allQuestions }: Props) {
   const [selectedIds, setSelectedIds] = useState<string[]>(entry.question_ids || [])
   const [answers, setAnswers] = useState<Record<string, string>>(entry.answers || {})
   const [photoUrls, setPhotoUrls] = useState<string[]>(entry.photo_urls || [])
+  const [customQuestions, setCustomQuestions] = useState<Record<string, string>>(entry.custom_questions || {})
+  const [customInput, setCustomInput] = useState('')
+  const [note, setNote] = useState<string>(entry.note || '')
   const [saving, setSaving] = useState(false)
+  const [savingToBank, setSavingToBank] = useState(false)
+  const [creatingNew, setCreatingNew] = useState(false)
 
   const questionMap = Object.fromEntries(allQuestions.map(q => [q.id, q]))
 
@@ -42,12 +49,28 @@ export default function WeekForm({ entry, allQuestions }: Props) {
     setSelectedIds(prev => [...prev, id])
   }
 
+  async function handleNewLetter() {
+    setCreatingNew(true)
+    const res = await fetch('/api/entries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ weekOf: entry.week_of }),
+    })
+    const data = await res.json()
+    if (data.id) {
+      router.push(`/week/${data.id}`)
+    } else {
+      alert('Failed to create new letter')
+      setCreatingNew(false)
+    }
+  }
+
   async function handlePreview() {
     setSaving(true)
     await fetch(`/api/entries/${entry.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers, photoUrls, questionIds: selectedIds }),
+      body: JSON.stringify({ answers, photoUrls, questionIds: selectedIds, note }),
     })
     router.push(`/preview/${entry.id}`)
   }
@@ -128,13 +151,35 @@ export default function WeekForm({ entry, allQuestions }: Props) {
         )}
       </div>
 
+      <div className="flex flex-col gap-2">
+        <label className="font-medium">Anything else? <span className="text-gray-400 font-normal text-sm">(optional)</span></label>
+        <textarea
+          value={note}
+          onChange={e => setNote(e.target.value)}
+          rows={3}
+          disabled={!!entry.sent_at}
+          className="border rounded px-3 py-2 text-sm resize-y w-full disabled:bg-gray-50 disabled:text-gray-500"
+          placeholder="A thought, a memory, something funny…"
+        />
+      </div>
+
       {entry.sent_at ? (
-        <a
-          href={`/preview/${entry.id}`}
-          className="bg-gray-200 text-gray-600 rounded px-4 py-2.5 font-medium text-center"
-        >
-          View sent letter →
-        </a>
+        <div className="flex flex-col gap-2">
+          <a
+            href={`/preview/${entry.id}`}
+            className="bg-gray-200 text-gray-600 rounded px-4 py-2.5 font-medium text-center"
+          >
+            View sent letter →
+          </a>
+          <button
+            type="button"
+            onClick={handleNewLetter}
+            disabled={creatingNew}
+            className="border border-indigo-600 text-indigo-600 rounded px-4 py-2.5 font-medium text-center disabled:opacity-50"
+          >
+            {creatingNew ? 'Creating…' : 'Write another letter this week'}
+          </button>
+        </div>
       ) : (
         <button
           type="button"

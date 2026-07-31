@@ -35,3 +35,11 @@ export async function PATCH(request: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ question: data })
 }
+
+export async function DELETE(request: Request) {
+  const { id } = await request.json()
+  const supabase = createClient()
+  const { error } = await supabase.from('questions').delete().eq('id', id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}

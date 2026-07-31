@@ -13,7 +13,7 @@ export async function GET(_request: Request, { params }: { params: { id: string 
 }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  const { answers, photoUrls, questionIds } = await request.json()
+  const { answers, photoUrls, questionIds, note } = await request.json()
   const supabase = createClient()
 
   const patch: Record<string, unknown> = {
@@ -21,6 +21,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     photo_urls: photoUrls ?? [],
   }
   if (questionIds !== undefined) patch.question_ids = questionIds
+  if (note !== undefined) patch.note = note || null
 
   const { error } = await supabase
     .from('weekly_entries')

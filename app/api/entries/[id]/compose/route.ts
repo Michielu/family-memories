@@ -32,6 +32,10 @@ export async function POST(_request: Request, { params }: { params: { id: string
     month: 'long', day: 'numeric', year: 'numeric',
   })
 
+  const noteHtml = entry.note?.trim()
+    ? `<p style="margin:0 0 28px;white-space:pre-wrap">${entry.note.trim()}</p>`
+    : ''
+
   const sections = answers
     .map(a => `
       <section style="margin-bottom:24px">
@@ -43,7 +47,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
   const emailPreview = `
     <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:32px 24px;color:#1a1a1a;line-height:1.7">
       <p style="color:#888;font-size:0.85em;margin:0 0 28px">Week of ${weekLabel}</p>
-      ${sections}
+      ${noteHtml}${sections}
       <p style="margin-top:32px">Love, Dad</p>
     </div>
   `

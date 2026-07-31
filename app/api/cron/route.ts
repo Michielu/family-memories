@@ -25,10 +25,10 @@ export async function GET(request: Request) {
     .from('weekly_entries')
     .select('id')
     .eq('week_of', weekOf)
-    .single()
+    .limit(1)
 
-  if (existing) {
-    return NextResponse.json({ message: 'Entry already exists', entryId: existing.id })
+  if (existing && existing.length > 0) {
+    return NextResponse.json({ message: 'Entry already exists', entryId: existing[0].id })
   }
 
   const bankQuestions = await selectWeeklyQuestions(3, supabase)
